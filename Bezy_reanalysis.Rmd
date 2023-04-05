@@ -38,6 +38,52 @@ lm.1 <- lm(Interval ~ Treatment + CCL, data = exp.1)
 summary(lm.1)
 ```
 
-The intercept is for the control. So, the treament effect is >30 (hrs?) than the control. There was no CCL effect on Interval. I included only CCL because CCW and CCL are correlated. 
+The intercept is for the control. So, the treatment effect is >30 (hrs?) than the control. There was no CCL effect on Interval. I included only CCL because CCW and CCL are correlated. 
 
+
+
+No effect in the distance moved. 
+
+
+Experiment #2.
+
+I modified variable names and factor levels. Also created a new variable (reencounter interval in minutes). See below.
+
+```{r}
+hms2min <- function(x){
+  tmp <- strsplit(x, split = ":")
+  if (is.na(tmp)) {
+    out <- NA
+  } else {
+    tmp <- unlist(tmp)
+    out <- as.numeric(tmp[1]) *60 + as.numeric(tmp[2]) + as.numeric(tmp[3])/60
+  }
+  return(out)
+}
+
+col.def.2 <- cols(Turtle = col_integer(),
+                  Date = col_date("%m/%d/%y"),
+                  Treatment_Time = col_time("%h:%M %p"),
+                  Treatment = col_factor(c("SW", "ZN")),
+                  Application = col_factor(c("E", "I_E")),
+                  Time_Reencounter = col_character(),
+                  Reencounter_Interval = col_character(),
+                  Nesting = col_factor(c("Confirmed", "Unconfirmed")))
+
+exp.2 <- read_csv("data/Bezy_Olfaction_Experiment2.csv",
+                  col_types = col.def.2) %>%
+  mutate(Reencounter_min = lapply(Reencounter_Interval, 
+                                  FUN = hms2min) %>% 
+           unlist())
+
+lm.2 <- lm(Reencounter_min ~ Treatment, 
+           data = exp.2 %>% filter(Application == "E"))
+summary(lm.2)
+```
+
+
+```{r}
+lm.2.1 <- lm(Reencounter_min ~ Treatment, data = exp.2)
+summary(lm.2.1)
+```
 
