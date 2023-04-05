@@ -1,0 +1,43 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Trying to improve the analysis by Bezy et al. Proceedings B manuscript.
+
+```{r}
+library(tidyverse)
+library(readr)
+
+
+```
+
+
+Edited "Treatment Date" to "Treatment_Date"
+```{r}
+
+col.def <- cols(Rank = col_integer(),
+                DateTime = col_datetime("%m/%d/%y %H:%M"),
+                Treatment = col_factor(levels = c("SW", "ZN")),
+                Treatment_Date = col_date("%m/%d/%y"),
+                Interval = col_integer(),
+                km = col_double(),
+                CCL = col_double(),
+                CCW = col_double(),
+                Nesting = col_factor(c("Confirmed", "Unconfirmed")))
+
+# I created two new variables: DOT and DOT1
+# DOT is the day of treatment as in the day of year
+# DOT1 is the number of days since treatment
+exp.1 <- read_csv("data/Bezy_Olfaction_Experiment1.csv",
+                  col_types = col.def) %>%
+  mutate(DOT = lubridate::yday(Treatment_Date),
+         DOT1 = DOT - min(DOT, na.rm = T))
+
+lm.1 <- lm(Interval ~ Treatment + CCL, data = exp.1)
+summary(lm.1)
+```
+
+The intercept is for the control. So, the treament effect is >30 (hrs?) than the control. There was no CCL effect on Interval. I included only CCL because CCW and CCL are correlated. 
+
+
